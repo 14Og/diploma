@@ -1,0 +1,8 @@
+.venv/
+.vscode/
+KMU2025/
+НИР_ВКР2025/
+НИР2024/
+Documents/
+**/__pycache__/
+
