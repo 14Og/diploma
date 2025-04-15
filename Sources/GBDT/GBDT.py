@@ -12,26 +12,41 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
+from sklearn.model_selection import GridSearchCV
+
 from typing import final, Tuple
 
 
 class GBDTFitter(AbstractCalibrationPerformer):
     params = {
         "objective": "reg:squarederror",
-        "n_estimators": 300,
-        "max_depth": 4,
-        "learning_rate": 0.1,
-        "subsample": 1,
         "colsample_bytree": 1.0,
-        "reg_lambda": 4,
-        "reg_alpha": 0,
-
+        "reg_alpha": 0, # L1
+        "reg_lambda": 1, # L2
+        "max_depth": 7,
+        "learning_rate": 0.05,
+        "gamma": 0,
+        "min_child_weight": 6,
+        "n_estimators": 500,
+        "subsample": 1        
     }
+    
+    # hyper_params = {
+    #     "n_estimators": [100, 300, 500],
+    #     "max_depth": [3, 5, 7],
+    #     "learning_rate": [0.02, 0.05, 0.1],
+    #     "reg_lambda": [1, 3, 5],
+    #     "subsample": [0.8, 0.9, 1],
+    #     "gamma": [0, 0.1, 0.2],
+    #     "min_child_weight": [2, 4, 6]
+    # }
 
     def __init__(self, module_path=path):
+        
         super().__init__(module_path=module_path)
         self.x_regressor = xgb.XGBRegressor(**self.params)
         self.y_regressor = xgb.XGBRegressor(**self.params)
+                
 
     def __fit(self, panel_name: str) -> None:
         features = self.data_base[panel_name].initial_data.loc[:, ["x_light", "y_light"]]
@@ -58,7 +73,7 @@ class GBDTFitter(AbstractCalibrationPerformer):
 
         test_data["X_boosted"] = self.x_regressor.predict(samples)
         test_data["Y_boosted"] = self.y_regressor.predict(samples)
-        
+
         return test_data
 
     @final
@@ -92,7 +107,7 @@ class GBDTFitter(AbstractCalibrationPerformer):
             :,
             ["X", "Y", "azimuth", "elevation", "X_boosted", "Y_boosted"],
         ]
-        
+
         self.errors_dataframe["angle_error_boosted"] = self.errors_dataframe.apply(
             lambda row: pd.Series(
                 Vector.angle_between_vectors(
@@ -122,3 +137,11 @@ class GBDTFitter(AbstractCalibrationPerformer):
             self.errors_dataframe.to_csv(full_path_err, float_format="%f")
         else:
             return self.stats_dataframe
+
+if __name__ == "__main__":
+    gbdt_fitter = GBDTFitter()
+    panels = gbdt_fitter.data_base.panel_list[3::2]
+
+    train_dframe = gbdt_fitter.perform_training(panels[0])
+    print(train_dframe)
+
