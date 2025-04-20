@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split
 
 from typing import final, Tuple
 
@@ -23,10 +23,9 @@ class GBDTFitter(AbstractCalibrationPerformer):
         "colsample_bytree": 1.0,
         "reg_alpha": 0, # L1
         "reg_lambda": 1, # L2
-        "max_depth": 7,
-        "learning_rate": 0.05,
+        "max_depth": 3,
+        "learning_rate": 0.08,
         "gamma": 0,
-        "min_child_weight": 6,
         "n_estimators": 500,
         "subsample": 1        
     }
@@ -44,37 +43,42 @@ class GBDTFitter(AbstractCalibrationPerformer):
     def __init__(self, module_path=path):
         
         super().__init__(module_path=module_path)
-        self.x_regressor = xgb.XGBRegressor(**self.params)
-        self.y_regressor = xgb.XGBRegressor(**self.params)
+        self.X_regressor = xgb.XGBRegressor(**self.params)
+        self.Y_regressor = xgb.XGBRegressor(**self.params)
                 
 
-    def __fit(self, panel_name: str) -> None:
-        features = self.data_base[panel_name].initial_data.loc[:, ["x_light", "y_light"]]
-        self.x_regressor.fit(features, self.data_base[panel_name].initial_data["X"])
-        self.y_regressor.fit(features, self.data_base[panel_name].initial_data["Y"])
+    def __fit(self, train_features: pd.DataFrame, train_outputs: pd.DataFrame) -> None:
+
+        self.X_regressor.fit(train_features, train_outputs["X"])
+        self.Y_regressor.fit(train_features, train_outputs["Y"])
 
     @final
     def perform_training(self, panel_name: str) -> pd.DataFrame:
         train_data = self.data_base[panel_name].initial_data.copy()
         features = train_data.loc[:, ["x_light", "y_light"]]
 
-        self.__fit(panel_name=panel_name)
+        self.__fit(features, train_data)
 
-        train_data["X_boosted"] = self.x_regressor.predict(features)
-        train_data["Y_boosted"] = self.y_regressor.predict(features)
+        train_data["X_boosted"] = self.X_regressor.predict(features)
+        train_data["Y_boosted"] = self.Y_regressor.predict(features)
 
         return train_data
 
     @final
     def perform_testing(self, panel_name: str) -> pd.DataFrame:
-        test_data = self.data_base[panel_name].test_data.copy()
-        samples = test_data.loc[:, ["x_light", "y_light"]]
-        self.__fit(panel_name=panel_name)
+        train_dframe = self.data_base[panel_name].initial_data.copy()
+        train_features = train_dframe.loc[:, ["x_light", "y_light"]]
 
-        test_data["X_boosted"] = self.x_regressor.predict(samples)
-        test_data["Y_boosted"] = self.y_regressor.predict(samples)
+        
+        test_dframe = self.data_base[panel_name].test_data.copy()
+        test_features = test_dframe.loc[:, ["x_light", "y_light"]]
+        
+        self.__fit(train_features=train_features, train_outputs=train_dframe)
 
-        return test_data
+        test_dframe["X_boosted"] = self.X_regressor.predict(test_features)
+        test_dframe["Y_boosted"] = self.Y_regressor.predict(test_features)
+
+        return test_dframe
 
     @final
     def exec(self):
@@ -98,7 +102,7 @@ class GBDTFitter(AbstractCalibrationPerformer):
     @final
     def get_calibration_parameters(self, panel_name: str) -> Tuple[xgb.XGBRegressor]:
         self.__fit(panel_name)
-        return self.x_regressor, self.y_regressor
+        return self.X_regressor, self.Y_regressor
 
     @final
     def make_calibration_statistics(self):

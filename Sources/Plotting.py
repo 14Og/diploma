@@ -113,10 +113,7 @@ class ResearchPlotter(Plotter):
                 fontsize=30,
             )
             ax.tick_params(labelsize=25)
-            # for tick in ax.xaxis.get_major_ticks():
-            #     tick.label.set_fontsize(25)
-            # for tick in ax.yaxis.get_major_ticks():
-            #     tick.label.set_fontsize(25)
+
 
         cbar = plt.colorbar(im, ax=axes, orientation="horizontal")
         cbar.ax.tick_params(labelsize=30)
@@ -293,5 +290,4 @@ class ResearchPlotter(Plotter):
 if __name__ == "__main__":
     panel = "g01-0001"
     poly = PolynomialFitter()
-    # ResearchPlotter.plot_model_training_results(panel, poly.perform_training(panel), False, "X_cube", "Y_cube")
     ResearchPlotter.plot_initial_data(panel)

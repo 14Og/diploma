@@ -15,6 +15,7 @@ class DataInstances(Enum):
     INIT_DATA = "first_run_data.csv"
     TEST_DATA = "error_data.csv"
     FOV_DATA = "fov_data.csv"
+    SECOND_RUN_DATA = "second_run_data.csv"
 
 
 class PanelData:
@@ -26,11 +27,13 @@ class PanelData:
         test_data: pd.DataFrame | None = None,
         trained_data: pd.DataFrame | None = None,
         fov_data: pd.DataFrame | None = None,
+        second_run_data: pd.DataFrame | None = None
     ):
         self.__initial_data = init_data
         self.__test_data = test_data
         self.__trained_data = trained_data
         self.__fov_data = fov_data
+        self.__second_run_data = second_run_data
 
         self.name = name
 
@@ -65,6 +68,14 @@ class PanelData:
     @fov_data.setter
     def fov_data(self, fov_data: pd.DataFrame) -> None:
         self.__fov_data = fov_data
+        
+    @property
+    def second_run_data(self) -> pd.DataFrame:
+        return self.__second_run_data
+
+    @second_run_data.setter
+    def second_run_data(self, second_run_data: pd.DataFrame) -> None:
+        self.__second_run_data = second_run_data
 
 
 class PanelDataBase:
@@ -79,7 +90,7 @@ class PanelDataBase:
 
     def __getitem__(self, key: str) -> PanelData:
         panel = PanelData(key)
-        panel.initial_data, panel.test_data, panel.fov_data = self.__read_dataframes(key)
+        panel.initial_data, panel.test_data, panel.fov_data, panel.second_run_data = self.__read_dataframes(key)
         return panel
 
     def __read_dataframes(self, panel: str) -> Tuple[pd.DataFrame]:
@@ -91,6 +102,7 @@ class PanelDataBase:
             read(self.__join(panel, DataInstances.INIT_DATA.value)),
             read(self.__join(panel, DataInstances.TEST_DATA.value)),
             read(self.__join(panel, DataInstances.FOV_DATA.value), False),
+            read(self.__join(panel, DataInstances.SECOND_RUN_DATA.value))
         )
 
     @staticmethod
