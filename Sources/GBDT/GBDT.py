@@ -22,11 +22,12 @@ class GBDTFitter(AbstractCalibrationPerformer):
         "objective": "reg:squarederror",
         "colsample_bytree": 1.0,
         "reg_alpha": 0, # L1
-        "reg_lambda": 1, # L2
-        "max_depth": 3,
+        "reg_lambda": 4, # L2
+        "max_depth": 5,
         "learning_rate": 0.08,
         "gamma": 0,
         "n_estimators": 500,
+        "min_child_weight": 6,
         "subsample": 1        
     }
     

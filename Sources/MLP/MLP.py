@@ -62,7 +62,7 @@ class MLPFitter(AbstractCalibrationPerformer):
                                   self.data_base[panel_name].second_run_data])
         train_features = train_dframe.loc[:, ["x_light", "y_light"]]
 
-        test_dframe = self.data_base[panel_name].second_run_data.copy()
+        test_dframe = self.data_base[panel_name].test_data.copy()
         test_features = test_dframe.loc[:, ["x_light", "y_light"]]
 
         self.__fit(train_features=train_features, train_outputs=train_dframe)

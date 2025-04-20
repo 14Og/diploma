@@ -79,9 +79,10 @@ class ResearchPlotter(Plotter):
         plt.show()
 
     @staticmethod
-    def plot_error_colormesh(panel_name: str, errors_dataframe: pd.DataFrame, *error_labels: str) -> None:
+    def plot_error_colormesh(panel_name: str, errors_dataframe: pd.DataFrame, plot_label:str, *error_labels: str) -> None:
         panel_frame = errors_dataframe.loc[panel_name]
         errors = [panel_frame[error_label].to_numpy() for error_label in error_labels]
+        mean_errors = [error.mean() for error in errors]
         min_error = np.array(errors).ravel().min()
         max_error = np.array(errors).ravel().max()
 
@@ -95,28 +96,29 @@ class ResearchPlotter(Plotter):
 
         error_grids = [griddata((el, az), error, (el_grid, az_grid), method="cubic") for error in errors]
 
-        fig, axes = plt.subplots(len(errors), 1, constrained_layout=True)
+        fig, axes = plt.subplots(len(errors), 1, constrained_layout=True, figsize=(18, 12))
         if len(errors) == 1:
             axes = (axes,)
-        # plt.suptitle("Test error visualization", fontsize=25)
-        for ax, label, error in zip(axes, error_labels, error_grids):
-            ax.set_xlabel(f"Elevation, {degree_symbol}", fontsize=30)
-            ax.set_ylabel(f"Azimuth, {degree_symbol}", fontsize=30)
+        plt.suptitle(plot_label, fontsize=40)
+        for ax, label, error, mean_error in zip(axes, error_labels, error_grids, mean_errors):
+            ax.set_xlabel(f"Elevation, {degree_symbol}", fontsize=40)
+            ax.set_ylabel(f"Azimuth, {degree_symbol}", fontsize=40)
             # ax.set_title(label)
             im = ax.pcolormesh(el_grid, az_grid, error, cmap=colormap, vmin=min_error, vmax=max_error, shading="auto")
             ax.text(
                 0.05,
                 0.95,
-                f"Mean error: {error.mean().__round__(3)}{degree_symbol}",
+                f"Mean error: {round(mean_error, 3)}{degree_symbol}",
                 transform=ax.transAxes,
                 bbox={"facecolor": "white", "edgecolor": "black"},
-                fontsize=30,
+                fontsize=40,
             )
-            ax.tick_params(labelsize=25)
+            ax.tick_params(labelsize=40)
 
 
         cbar = plt.colorbar(im, ax=axes, orientation="horizontal")
-        cbar.ax.tick_params(labelsize=30)
+        cbar.ax.tick_params(labelsize=40)
+        cbar.set_label(f"Error, {degree_symbol}", size=40)
 
         plt.show()
 
@@ -207,10 +209,11 @@ class ResearchPlotter(Plotter):
 
         x_light = train_dataframe["x_light"]
         y_light = train_dataframe["y_light"]
-        X_trained = train_dataframe[labels[0]]
-        Y_trained = train_dataframe[labels[1]]
-        X = train_dataframe["X"]
-        Y = train_dataframe["Y"]
+        X_trained = train_dataframe[labels[0]].to_numpy()
+        Y_trained = train_dataframe[labels[1]].to_numpy()
+        X = train_dataframe["X"].to_numpy()
+        Y = train_dataframe["Y"].to_numpy()
+        
 
         errors = np.array(
             [
