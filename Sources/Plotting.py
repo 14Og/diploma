@@ -79,9 +79,10 @@ class ResearchPlotter(Plotter):
         plt.show()
 
     @staticmethod
-    def plot_error_colormesh(panel_name: str, errors_dataframe: pd.DataFrame, *error_labels: str) -> None:
+    def plot_error_colormesh(panel_name: str, errors_dataframe: pd.DataFrame, plot_label:str, *error_labels: str) -> None:
         panel_frame = errors_dataframe.loc[panel_name]
-        errors = [panel_frame[error_label].to_numpy() for error_label in error_labels]
+        errors = [panel_frame[error_label].dropna() for error_label in error_labels]
+        mean_errors = [error.mean() for error in errors]
         min_error = np.array(errors).ravel().min()
         max_error = np.array(errors).ravel().max()
 
@@ -95,28 +96,29 @@ class ResearchPlotter(Plotter):
 
         error_grids = [griddata((el, az), error, (el_grid, az_grid), method="cubic") for error in errors]
 
-        fig, axes = plt.subplots(len(errors), 1, constrained_layout=True)
+        fig, axes = plt.subplots(len(errors), 1, constrained_layout=True, figsize=(18, 12))
         if len(errors) == 1:
             axes = (axes,)
-        # plt.suptitle("Test error visualization", fontsize=25)
-        for ax, label, error in zip(axes, error_labels, error_grids):
-            ax.set_xlabel(f"Elevation, {degree_symbol}", fontsize=30)
-            ax.set_ylabel(f"Azimuth, {degree_symbol}", fontsize=30)
+        plt.suptitle(plot_label, fontsize=40)
+        for ax, label, error, mean_error in zip(axes, error_labels, error_grids, mean_errors):
+            ax.set_xlabel(f"Elevation, {degree_symbol}", fontsize=40)
+            ax.set_ylabel(f"Azimuth, {degree_symbol}", fontsize=40)
             # ax.set_title(label)
             im = ax.pcolormesh(el_grid, az_grid, error, cmap=colormap, vmin=min_error, vmax=max_error, shading="auto")
             ax.text(
                 0.05,
                 0.95,
-                f"Mean error: {error.mean().__round__(3)}{degree_symbol}",
+                f"Mean error: {round(mean_error, 3)}{degree_symbol}",
                 transform=ax.transAxes,
                 bbox={"facecolor": "white", "edgecolor": "black"},
-                fontsize=30,
+                fontsize=40,
             )
-            ax.tick_params(labelsize=25)
+            ax.tick_params(labelsize=40)
 
 
         cbar = plt.colorbar(im, ax=axes, orientation="horizontal")
-        cbar.ax.tick_params(labelsize=30)
+        cbar.ax.tick_params(labelsize=40)
+        cbar.set_label(f"Error, {degree_symbol}", size=40)
 
         plt.show()
 
@@ -174,7 +176,7 @@ class ResearchPlotter(Plotter):
 
         clusters = panel_frame["cluster"].drop_duplicates().tolist()
         fig, axes = plt.subplots(len(error_labels), 1, constrained_layout=True)
-        fig.suptitle("Error distribution in FOV clusters", fontsize=20)
+        fig.suptitle("Error distribution in FOV regions", fontsize=30)
         if len(error_labels) == 1:
             axes = (axes,)
         for ax, error_label in zip(axes, error_labels):
@@ -185,9 +187,10 @@ class ResearchPlotter(Plotter):
                 data.append(cluster_data)
                 means.append(statistics.mean(list(chain(*data))))
             stats = cbook.boxplot_stats(data, labels=names)
-            ax.set_ylabel(f"Error, {degree_symbol}")
-            ax.set_xlabel("Cluster")
-            ax.set_title(error_label)
+            ax.set_ylabel(f"Error, {degree_symbol}", fontsize=30)
+            ax.set_xlabel("Sensor FOV Region", fontsize=30)
+            ax.set_title(error_label, fontsize=30)
+            ax.tick_params(labelsize=20)
 
             ax.bxp(
                 stats,
@@ -196,8 +199,8 @@ class ResearchPlotter(Plotter):
                 boxprops={"facecolor": "bisque"},
                 showfliers=False,
             )
-            ax.step(clusters, means, where="mid", color="red", linewidth=2, label="Mean accumulation")
-            ax.legend()
+            ax.step(clusters, means, where="mid", color="red", linewidth=2, label="Mean error accumulation")
+            ax.legend(prop={'size':30})
         plt.show()
 
     @staticmethod
@@ -207,10 +210,11 @@ class ResearchPlotter(Plotter):
 
         x_light = train_dataframe["x_light"]
         y_light = train_dataframe["y_light"]
-        X_trained = train_dataframe[labels[0]]
-        Y_trained = train_dataframe[labels[1]]
-        X = train_dataframe["X"]
-        Y = train_dataframe["Y"]
+        X_trained = train_dataframe[labels[0]].to_numpy()
+        Y_trained = train_dataframe[labels[1]].to_numpy()
+        X = train_dataframe["X"].to_numpy()
+        Y = train_dataframe["Y"].to_numpy()
+        
 
         errors = np.array(
             [
@@ -225,7 +229,7 @@ class ResearchPlotter(Plotter):
         )
         Y_ax.view_init(10, 120, 0)
         X_ax.view_init(10, 30, 0)
-        fig.suptitle("Model training results", fontsize=25)
+        fig.suptitle("Model training results", fontsize=30)
         [axi.set_aspect("equal") for axi in (X_ax, Y_ax)]
 
         X_ax.grid(False)
@@ -239,7 +243,10 @@ class ResearchPlotter(Plotter):
 
         scatter = X_ax.scatter3D(x_light, y_light, X_trained, marker="8", c=errors, cmap=colormap, norm=norm)
         Y_ax.scatter3D(x_light, y_light, Y_trained, marker="8", c=errors, cmap=colormap, norm=norm)
-        cbar = plt.colorbar(scatter, ax=[X_ax, Y_ax], orientation="horizontal", label=f"Train error,{degree_symbol} ")
+        cbar = plt.colorbar(scatter, ax=[X_ax, Y_ax], orientation="horizontal")
+        cbar.ax.tick_params(labelsize=30)
+        cbar.set_label(f"Train error,{degree_symbol} ", size=30)
+
 
         if animation_path:
 

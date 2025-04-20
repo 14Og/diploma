@@ -38,7 +38,7 @@ class Plotter:
             plt.rcParams["figure.dpi"] = 100
         elif mode == "report":
             plt.rcParams["figure.figsize"] = (12, 12)
-            plt.rcParams["figure.dpi"] = 100
+            plt.rcParams["figure.dpi"] = 300
 
     @classmethod
     def color(cls, i):
@@ -174,8 +174,8 @@ class Plotter:
     @DataProcessor.csv_loader
     def plot_light_gradient(first_log: pd.DataFrame | str, gridspec: int = 50) -> None:
         warnings.filterwarnings("ignore")
-        vector_fig, vector_ax = plt.subplots(1, 2, figsize=(16, 8))
-        cor_fig, cor_ax = plt.subplots(1, 2, figsize=(16, 8))
+        vector_fig, vector_ax = plt.subplots(2, 1, figsize=(8, 16))
+        cor_fig, cor_ax = plt.subplots(2, 1, figsize=(8, 16))
 
         [axi.set_aspect("equal", adjustable="box") for axi in np.concatenate((vector_ax.ravel(), cor_ax.ravel()))]
         [axi.set_aspect("equal", adjustable="box") for axi in np.concatenate((vector_ax.ravel(), cor_ax.ravel()))]
@@ -954,7 +954,7 @@ class Plotter:
 
     @staticmethod
     def plot_fov_preestimation(fov_frame: pd.DataFrame) -> None:
-        fig, ax = plt.subplots(1, 2, figsize=(16, 8))
+        fig, ax = plt.subplots(2, 1, figsize=(8, 16))
         ax[0].set_xlabel("R", fontsize=20)
         ax[0].set_ylabel("r", fontsize=20)
         ax[1].set_xlabel("R", fontsize=20)
