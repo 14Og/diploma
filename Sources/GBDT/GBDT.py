@@ -55,7 +55,9 @@ class GBDTFitter(AbstractCalibrationPerformer):
 
     @final
     def perform_training(self, panel_name: str) -> pd.DataFrame:
-        train_data = self.data_base[panel_name].initial_data.copy()
+        train_data = pd.concat([self.data_base[panel_name].initial_data, 
+                                self.data_base[panel_name].second_run_data])
+        
         features = train_data.loc[:, ["x_light", "y_light"]]
 
         self.__fit(features, train_data)
@@ -67,7 +69,8 @@ class GBDTFitter(AbstractCalibrationPerformer):
 
     @final
     def perform_testing(self, panel_name: str) -> pd.DataFrame:
-        train_dframe = self.data_base[panel_name].initial_data.copy()
+        train_dframe = pd.concat([self.data_base[panel_name].initial_data, 
+                                self.data_base[panel_name].second_run_data])
         train_features = train_dframe.loc[:, ["x_light", "y_light"]]
 
         

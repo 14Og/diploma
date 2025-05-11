@@ -16,7 +16,6 @@ class Vector:
         try:
             self.z = math.sqrt(1 - self.x**2 - self.y**2)
         except ValueError:
-            print("[WARNING] z is set to None")
             self.z = None
 
     @staticmethod

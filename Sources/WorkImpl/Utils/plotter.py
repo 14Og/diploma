@@ -28,10 +28,6 @@ class Plotter:
         plt.rcParams["axes.grid"] = True
         plt.rcParams["grid.alpha"] = 0.3
         plt.rcParams["grid.linestyle"] = "--"
-
-
-        # plt.rc('text.latex',preamble=r'\\usepackage[utf8]{inputenc}')
-        # plt.rc('text.latex',preamble=r'\\usepackage[russian]{babel}')
                 
         if mode == "plotter":
             plt.rcParams["figure.figsize"] = (10, 10)
@@ -40,6 +36,10 @@ class Plotter:
             plt.rcParams["figure.figsize"] = (12, 12)
             plt.rcParams["figure.dpi"] = 300
 
+    @classmethod
+    def set_picture_dpi(cls, dpi: int) -> None:
+        plt.rcParams["figure.dpi"] = dpi
+        
     @classmethod
     def color(cls, i):
         colors = cls.colors(i)
@@ -172,10 +172,17 @@ class Plotter:
 
     @staticmethod
     @DataProcessor.csv_loader
-    def plot_light_gradient(first_log: pd.DataFrame | str, gridspec: int = 50) -> None:
+    def plot_light_gradient(first_log: pd.DataFrame | str, gridspec: int = 50, orientation = "horizontal") -> None:
         warnings.filterwarnings("ignore")
-        vector_fig, vector_ax = plt.subplots(2, 1, figsize=(8, 16))
-        cor_fig, cor_ax = plt.subplots(2, 1, figsize=(8, 16))
+        vector_fig, vector_ax = None, None
+        cor_fig, cor_ax = None, None
+        if orientation == "horizontal":
+            vector_fig, vector_ax = plt.subplots(1,2 , figsize=(16, 8))
+            cor_fig, cor_ax = plt.subplots(1,2 , figsize=(16, 8))
+        elif orientation == "vertical":
+            vector_fig, vector_ax = plt.subplots(2, 1, figsize=(8, 16))
+            cor_fig, cor_ax = plt.subplots(2, 1, figsize=(8, 16))
+            
 
         [axi.set_aspect("equal", adjustable="box") for axi in np.concatenate((vector_ax.ravel(), cor_ax.ravel()))]
         [axi.set_aspect("equal", adjustable="box") for axi in np.concatenate((vector_ax.ravel(), cor_ax.ravel()))]
@@ -953,8 +960,12 @@ class Plotter:
         plt.show()
 
     @staticmethod
-    def plot_fov_preestimation(fov_frame: pd.DataFrame) -> None:
-        fig, ax = plt.subplots(2, 1, figsize=(8, 16))
+    def plot_fov_preestimation(fov_frame: pd.DataFrame, orientation="horizontal") -> None:
+        fig, ax = None, None
+        if orientation == "horizontal":
+            fig, ax = plt.subplots(1,2, figsize=(16,8))
+        elif orientation == "vertical":
+            fig, ax = plt.subplots(2,1, figsize=(8,16))
         ax[0].set_xlabel("R", fontsize=20)
         ax[0].set_ylabel("r", fontsize=20)
         ax[1].set_xlabel("R", fontsize=20)

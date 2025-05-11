@@ -42,7 +42,8 @@ class PolynomialFitter(AbstractCalibrationPerformer):
 
     def __get_training_model(self, panel_name: str, degree: int) -> Tuple[LinearRegression]:
         poly = PolynomialFeatures(degree, include_bias=False)
-        init_data = self.data_base[panel_name].initial_data
+        init_data = pd.concat([self.data_base[panel_name].initial_data, 
+                                self.data_base[panel_name].second_run_data])
 
         X = init_data["X"]
         Y = init_data["Y"]
@@ -76,17 +77,18 @@ class PolynomialFitter(AbstractCalibrationPerformer):
         cube_x, cube_y, cube_comb = self.__get_training_model(panel_name, 3)
         quad_x, quad_y, quad_comb = self.__get_training_model(panel_name, 4)
 
-        training_data = self.data_base[panel_name].initial_data
-        X = training_data["X"]
-        Y = training_data["Y"]
-        x_light = training_data["x_light"]
-        y_light = training_data["y_light"]
+        train_data = pd.concat([self.data_base[panel_name].initial_data, 
+                                self.data_base[panel_name].second_run_data])
+        X = train_data["X"]
+        Y = train_data["Y"]
+        x_light = train_data["x_light"]
+        y_light = train_data["y_light"]
 
-        training_data[["X_sq", "Y_sq"]] = np.array([sq_x.predict(sq_comb), sq_y.predict(sq_comb)]).T
-        training_data[["X_cube", "Y_cube"]] = np.array([cube_x.predict(cube_comb), cube_y.predict(cube_comb)]).T
-        training_data[["X_quad", "Y_quad"]] = np.array([quad_x.predict(quad_comb), quad_y.predict(quad_comb)]).T
+        train_data[["X_sq", "Y_sq"]] = np.array([sq_x.predict(sq_comb), sq_y.predict(sq_comb)]).T
+        train_data[["X_cube", "Y_cube"]] = np.array([cube_x.predict(cube_comb), cube_y.predict(cube_comb)]).T
+        train_data[["X_quad", "Y_quad"]] = np.array([quad_x.predict(quad_comb), quad_y.predict(quad_comb)]).T
 
-        return training_data
+        return train_data
 
     @final
     def perform_testing(self, panel_name: str) -> pd.DataFrame:

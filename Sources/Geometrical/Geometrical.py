@@ -107,7 +107,8 @@ class GeometricalFitter(AbstractCalibrationPerformer):
         self.phi0: float | None = 0
 
     def __get_calibration_parameters(self, panel_name: str, offset_type: OffsetsType) -> Tuple:
-        initial_data = self.data_base[panel_name].initial_data
+        initial_data = pd.concat([self.data_base[panel_name].initial_data, 
+                                self.data_base[panel_name].second_run_data])
         sensor_x = initial_data["x_light"]
         sensor_y = initial_data["y_light"]
         X = initial_data["X"]
@@ -145,7 +146,8 @@ class GeometricalFitter(AbstractCalibrationPerformer):
             panel_name, offset_type=self.OffsetsType.ALL_OFFSETS
         )
 
-        train_data = self.data_base[panel_name].initial_data
+        train_data = pd.concat([self.data_base[panel_name].initial_data, 
+                                self.data_base[panel_name].second_run_data])
 
         train_data[["X_unbiased", "Y_unbiased"]] = train_data.apply(
             lambda row: pd.Series(

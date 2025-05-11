@@ -44,28 +44,28 @@ class MLPFitter(AbstractCalibrationPerformer):
 
     @final
     def perform_training(self, panel_name: str) -> pd.DataFrame:
-        train_dframe = pd.concat([self.data_base[panel_name].initial_data, 
+        train_data = pd.concat([self.data_base[panel_name].initial_data, 
                                 self.data_base[panel_name].second_run_data])
         
-        features = train_dframe.loc[:, ["x_light", "y_light"]]
+        features = train_data.loc[:, ["x_light", "y_light"]]
 
-        self.__fit(features, train_dframe)
+        self.__fit(features, train_data)
 
-        train_dframe["X_mlp"] = self.model_X.predict(features)
-        train_dframe["Y_mlp"] = self.model_Y.predict(features)
+        train_data["X_mlp"] = self.model_X.predict(features)
+        train_data["Y_mlp"] = self.model_Y.predict(features)
 
-        return train_dframe
+        return train_data
 
     @final
     def perform_testing(self, panel_name: str) -> pd.DataFrame:
-        train_dframe = pd.concat([self.data_base[panel_name].initial_data, 
+        train_data = pd.concat([self.data_base[panel_name].initial_data, 
                                   self.data_base[panel_name].second_run_data])
-        train_features = train_dframe.loc[:, ["x_light", "y_light"]]
+        train_features = train_data.loc[:, ["x_light", "y_light"]]
 
         test_dframe = self.data_base[panel_name].test_data.copy()
         test_features = test_dframe.loc[:, ["x_light", "y_light"]]
 
-        self.__fit(train_features=train_features, train_outputs=train_dframe)
+        self.__fit(train_features=train_features, train_outputs=train_data)
 
         test_dframe["X_mlp"] = self.model_X.predict(test_features)
         test_dframe["Y_mlp"] = self.model_Y.predict(test_features)

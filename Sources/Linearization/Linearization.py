@@ -57,7 +57,8 @@ class LinearFitter(AbstractCalibrationPerformer, LinearTransformationPerformer):
 
     def __get_linearization_matrix(self, panel_name: str) -> Tuple[np.ndarray, np.ndarray]:
 
-        train_data: pd.DataFrame = self.data_base[panel_name].initial_data
+        train_data: pd.DataFrame = pd.concat([self.data_base[panel_name].initial_data, 
+                                self.data_base[panel_name].second_run_data])
 
         sensor_x = train_data["x_light"].to_numpy()
         sensor_y = train_data["y_light"].to_numpy()
@@ -86,7 +87,8 @@ class LinearFitter(AbstractCalibrationPerformer, LinearTransformationPerformer):
     @final
     def perform_training(self, panel_name: str) -> pd.DataFrame:
         linear_operator, bias = self.__get_linearization_matrix(panel_name=panel_name)
-        train_data = self.data_base[panel_name].initial_data.copy()
+        train_data = pd.concat([self.data_base[panel_name].initial_data, 
+                                self.data_base[panel_name].second_run_data])
         train_data[["X_linearized", "Y_linearized"]] = train_data.apply(
             lambda row: pd.Series(
                 self.perform_linear_transformation_then_bias(

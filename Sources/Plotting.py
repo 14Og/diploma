@@ -1,27 +1,22 @@
 import sys
 
-sys.path.append("/home/kolya/Yandex.Disk/diploma/Sources")
-
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import cbook
 from matplotlib import animation
-from matplotlib.animation import PillowWriter
 
 import pandas as pd
 import numpy as np
 from scipy.interpolate import griddata
+from sklearn.preprocessing import StandardScaler
 from itertools import chain
 import statistics
 
 from WorkImpl.Utils.plotter import Plotter
-from WorkImpl.Utils.dataprocessor import DataProcessor
 from Database import PanelDataBase
 from Vector import Vector
-from Polynomial.Polynomial import PolynomialFitter
 
-
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 Plotter.set_plotter_mode("report")
 
@@ -176,7 +171,7 @@ class ResearchPlotter(Plotter):
 
         clusters = panel_frame["cluster"].drop_duplicates().tolist()
         fig, axes = plt.subplots(len(error_labels), 1, constrained_layout=True)
-        fig.suptitle("Error distribution in FOV regions", fontsize=30)
+        fig.suptitle("Error distribution within sensor FOV regions", fontsize=30)
         if len(error_labels) == 1:
             axes = (axes,)
         for ax, error_label in zip(axes, error_labels):
@@ -205,7 +200,7 @@ class ResearchPlotter(Plotter):
 
     @staticmethod
     def plot_model_training_results(
-        panel_name: str, train_dataframe: pd.DataFrame, *labels: str, animation_path=None
+        panel_name: str, train_dataframe: pd.DataFrame, title:str, *labels: str, animation_path=None
     ) -> None:
 
         x_light = train_dataframe["x_light"]
@@ -229,7 +224,7 @@ class ResearchPlotter(Plotter):
         )
         Y_ax.view_init(10, 120, 0)
         X_ax.view_init(10, 30, 0)
-        fig.suptitle("Model training results", fontsize=30)
+        fig.suptitle(title, fontsize=30)
         [axi.set_aspect("equal") for axi in (X_ax, Y_ax)]
 
         X_ax.grid(False)
@@ -241,9 +236,9 @@ class ResearchPlotter(Plotter):
         X_ax.set_zlabel(labels[0], fontsize=20)
         Y_ax.set_zlabel(labels[1], fontsize=20)
 
-        scatter = X_ax.scatter3D(x_light, y_light, X_trained, marker="8", c=errors, cmap=colormap, norm=norm)
-        Y_ax.scatter3D(x_light, y_light, Y_trained, marker="8", c=errors, cmap=colormap, norm=norm)
-        cbar = plt.colorbar(scatter, ax=[X_ax, Y_ax], orientation="horizontal")
+        scatter = X_ax.scatter3D(x_light, y_light, X_trained, s=40, marker=".", c=errors, cmap=colormap, norm=norm)
+        Y_ax.scatter3D(x_light, y_light, Y_trained, s=40, marker=".", c=errors, cmap=colormap, norm=norm)
+        cbar = plt.colorbar(scatter, fraction=0.13, ax=[X_ax, Y_ax], orientation="horizontal")
         cbar.ax.tick_params(labelsize=30)
         cbar.set_label(f"Train error,{degree_symbol} ", size=30)
 
@@ -289,12 +284,45 @@ class ResearchPlotter(Plotter):
         plt.show()
         
     @staticmethod
-    def plot_calibration_stats_from_dataframes(geom_frame: pd.DataFrame, linear_frame: pd.DataFrame, poly_frame: pd.DataFrame) -> None:
+    def plot_mlp_scaling_effect(panel_name: str) -> None:
+        scaler = StandardScaler()
+        sensor_data = pd.concat([ResearchPlotter.data_base[panel_name].initial_data, 
+                                ResearchPlotter.data_base[panel_name].second_run_data]).loc[:, ["x_light", "y_light"]]
+        scaled_data = scaler.fit_transform(sensor_data)
         
-        pass
+        _, ax = plt.subplots(1, 2, figsize=(18,8))
+        
+        ax[0].set_title("Input data before scaling", fontsize=30)
+        ax[0].scatter(sensor_data["x_light"], sensor_data["y_light"], c='green', marker='.')
+        ax[0].set_xlabel("x sensor", fontsize=30)
+        ax[0].set_ylabel("y sensor", fontsize=30)
 
+        ax[1].set_title("Input data after scaling", fontsize=30)
+        ax[1].scatter(scaled_data[:, 0], scaled_data[:, 1], c='green', marker='.')
+        ax[1].set_xlabel("x sensor", fontsize=30)
+        ax[1].set_ylabel("y sensor", fontsize=30)
+        
+        plt.show()
+        
+    @staticmethod
+    def plot_models_precision_analysis(model_names: Tuple, metrics: Dict, metric_colors: Tuple) -> None:
+        x = np.arange(len(model_names), step=1.2)
+        w = 0.25
+        multiplier = 0
+        
+        _, ax = plt.subplots(layout='constrained', figsize=(18, 8))
+        for (attr, val), color in zip(metrics.items(), metric_colors):
+            offset = w * multiplier
+            rects = ax.bar(x + offset, val, w, label=attr, facecolor=color, alpha=0.9)
+            ax.bar_label(rects, padding=3, fontsize=20)
+            multiplier += 1
+            
+        ax.set_ylabel("Error,$^\\circ$", fontsize=30)
+        ax.set_title("Models precision analysis", fontsize=30)
+        ax.set_xticks(x + w, model_names, fontsize=30)
+        ax.legend(loc='upper right', ncols=2, fontsize=20)
 
+        plt.show()
+        
 if __name__ == "__main__":
-    panel = "g01-0001"
-    poly = PolynomialFitter()
-    ResearchPlotter.plot_initial_data(panel)
+    pass

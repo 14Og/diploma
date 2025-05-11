@@ -85,7 +85,6 @@ class PanelDataBase:
     FOV_THRESHOLD = 60
 
     def __init__(self):
-        print("Database target directory: ", self.DATA_DIRECTORY)
         self.panel_list, self.bad_panels_list = self.find_panels_lists()
 
     def __getitem__(self, key: str) -> PanelData:
