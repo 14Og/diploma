@@ -1,0 +1,4 @@
+name,avg_time,min_time,max_time,total_time,total_operations,total_items,total_bytes,operations_per_second,items_per_second,bytes_per_second
+"Polynomial 2 benchmark(10)",281,275,298,882161122,3131752,62635050,0,3550090,71001825,0
+"Polynomial 3 benchmark(10)",480,476,527,1000186469,2081554,41631110,0,2081165,41623348,0
+"Polynomial 4 benchmark(10)",726,726,730,982185761,1352567,27051350,0,1377098,27541989,0

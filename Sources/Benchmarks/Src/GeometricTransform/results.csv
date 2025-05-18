@@ -1,0 +1,4 @@
+name,avg_time,min_time,max_time,total_time,total_operations,total_items,total_bytes,operations_per_second,items_per_second,bytes_per_second
+"Geometric transformation (no offsets)(10)",485,485,538,962480452,1982890,39657810,0,2060187,41203756,0
+"Geometric transformation (linear offsets)(10)",543,526,572,976585908,1797980,35959610,0,1841087,36821758,0
+"Geometric transformation (all offsets)(10)",1038,960,1038,981641736,945273,18905470,0,962951,19259032,0
