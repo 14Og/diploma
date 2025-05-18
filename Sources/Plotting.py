@@ -324,5 +324,46 @@ class ResearchPlotter(Plotter):
 
         plt.show()
         
+    @staticmethod
+    def plot_time_benchmarks(algorithm_names: Tuple[str], metrics: Dict, colors: Tuple[str]) -> None:
+        x = np.linspace(0, 15, 7)
+        w = 0.5
+        multiplier = 0
+
+        _, ax = plt.subplots(layout='constrained', figsize=(20, 8))
+        for (attr, val), color in zip(metrics.items(), colors):
+            offset = w * multiplier
+            rects = ax.bar(x + offset, val, w, label=attr, facecolor=color, alpha=0.9)
+            ax.bar_label(rects, padding=3, fontsize=20)
+            multiplier += 1
+            
+        ax.set_ylabel("Time, nanoseconds", fontsize=30)
+        ax.set_title("Algorithm benchmarks", fontsize=30)
+        ax.set_xticks(x + w, algorithm_names, fontsize=30)
+        ax.legend(loc='upper right', ncols=2, fontsize=20)
+
+        plt.show()
+    
+    @staticmethod
+    def plot_ops_benchmarks(algorithm_names: Tuple[str], metrics: Dict, colors: Tuple[str]) -> None:
+        x = np.linspace(0, 6, 7)
+        w = 0.3
+        multiplier = 0
+
+        _, ax = plt.subplots(layout='constrained', figsize=(20, 8))
+        for (attr, val), color in zip(metrics.items(), colors):
+            offset = w * multiplier
+            rects = ax.bar(x + offset, val, w, label=attr, facecolor=color, alpha=0.9)
+            ax.bar_label(rects, padding=3, fontsize=20)
+            multiplier += 1
+            
+        ax.set_ylabel("Operations per second", fontsize=30)
+        ax.set_title("Algorithm benchmarks", fontsize=30)
+        ax.set_xticks(x, algorithm_names, fontsize=30)
+        ax.legend(loc='upper right', ncols=2, fontsize=20)
+
+        plt.show()
+        
+        
 if __name__ == "__main__":
     pass

@@ -136,7 +136,7 @@ class PolynomialFitter(AbstractCalibrationPerformer):
 
     @final
     def get_calibration_parameters(self, panel_name: str) -> Any:
-        return (self.__get_polynom_coefficients(panel_name, i) for i in (2, 3, 4))
+        return list((self.__get_polynom_coefficients(panel_name, i) for i in (2, 3, 4)))
 
     @final
     def make_calibration_statistics(self) -> pd.DataFrame | None:
